@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>For Your Birthday</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="experience" aria-label="Birthday website for your girlfriend">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero__image" src="birthday-conservatory.png" alt="Moonlit glass conservatory with candles and glowing flowers">
+        <div class="hero__veil"></div>
+        <nav class="topbar" aria-label="Birthday sections">
+          <a href="#note">Note</a>
+          <a href="#moments">Moments</a>
+          <a href="#wish">Wish</a>
+        </nav>
+        <div class="hero__content">
+          <p class="eyebrow">July 6, 2026</p>
+          <h1 id="hero-title">Happy birthday, my love.</h1>
+          <p class="hero__copy">Tonight is dressed up for you: candlelight, flowers, and a few little secrets waiting to be opened.</p>
+          <a class="hero__button" href="#note">Begin</a>
+        </div>
+        <a class="scroll-cue" href="#note" aria-label="Scroll to the birthday note"></a>
+      </section>
+
+      <section class="note" id="note">
+        <div class="section-label">A small note</div>
+        <div class="note__layout">
+          <h2>You make ordinary days feel carefully lit.</h2>
+          <p>
+            I wanted this to feel like stepping into a quiet place made only for you. Not loud, not rushed,
+            just beautiful in the way you make life beautiful: with warmth, grace, and the kind of smile that
+            stays with me long after the moment passes.
+          </p>
+        </div>
+      </section>
+
+      <section class="moments" id="moments" aria-labelledby="moments-title">
+        <div class="section-label">Open these</div>
+        <h2 id="moments-title">Three tiny birthday lanterns</h2>
+        <div class="lantern-grid">
+          <button class="lantern" type="button" data-message="For the way you laugh, even the room seems to remember it.">
+            <span>01</span>
+            <strong>Your laugh</strong>
+          </button>
+          <button class="lantern" type="button" data-message="For the softness you bring into hard days, and the courage you carry so naturally.">
+            <span>02</span>
+            <strong>Your heart</strong>
+          </button>
+          <button class="lantern" type="button" data-message="For every future birthday I hope I get to make a little more magical.">
+            <span>03</span>
+            <strong>Our tomorrows</strong>
+          </button>
+        </div>
+        <p class="revealed-message" aria-live="polite">Tap a lantern.</p>
+      </section>
+
+      <section class="wish" id="wish">
+        <div class="wish__panel">
+          <p class="section-label">Birthday wish</p>
+          <h2>May this year meet you gently and surprise you beautifully.</h2>
+          <p>And may you always know that being loved by you is one of my favorite things about being alive.</p>
+          <button class="wish__button" type="button">Make the room sparkle</button>
+        </div>
+      </section>
+    </main>
+    <div class="sparkle-field" aria-hidden="true"></div>
+    <script src="script.js"></script>
+  </body>
+</html>
