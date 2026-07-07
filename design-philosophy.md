@@ -1,8 +1,10 @@
 # Mooncat Playground
 
-Mooncat Playground turns a birthday greeting into a tiny world with rules, secrets, and affectionate discovery. The experience should feel meticulously crafted, as though a small toy diorama was built by hand and then brought to life with careful motion. Its inspiration is the playful spirit of drive-around web worlds, but its identity is softer: a cat, a moonlit garden, glowing charms, and messages that reveal themselves through movement.
+Mooncat Playground turns a birthday greeting into a tiny world with rules, secrets, and affectionate discovery. The experience should feel meticulously crafted, as though a small toy diorama was built by hand and then brought to life with careful motion. Its inspiration is the playful spirit of drive-around web worlds, but its identity is softer: a fluffy Persian-Siamese cat, a moonlit garden, birthday keepsakes, and messages that reveal themselves through movement.
 
-The world communicates through scale and touch. The cat is deliberately small against the garden so that every collected charm feels like a little journey. The player should not be reading instructions for long; they should understand the place by moving through it, seeing warm lights, paw prints, gifts, trees, and glowing objects arranged with painstaking attention.
+The world communicates through scale and touch. The cat is deliberately small against the garden so that every collected keepsake feels like a little journey. The player should not be reading instructions for long; they should understand the place by moving through it, seeing warm lights, paw prints, gifts, trail signs, trees, and glowing objects arranged with painstaking attention.
+
+The cat should feel like a birthday character, not a marker. Its pale fluffy coat, darker ears, face, paws, and tail use the Siamese "toasting" idea, while the round body and ruff keep the softness of a Persian mix. The walk cycle is simple and readable: legs pad in alternating rhythm, the body bobs, the head dips, and the tail sways so the character feels alive even in a compact low-poly style.
 
 Color balances night and celebration: ink sky, deep grass, candle gold, rose ribbon, mint leaves, and cool blue stars. The palette should be romantic without becoming sugary, playful without becoming childish. Each material is simple, but the composition must feel like the product of deep expertise: clear silhouettes, readable interactive targets, and a camera that keeps the scene feeling intentional.
 

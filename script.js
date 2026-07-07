@@ -10,9 +10,9 @@ const scoreEl = document.querySelector("#score");
 const messageText = document.querySelector("#messageText");
 
 const messages = [
-  "A moon cake crumb for the girl who makes everything sweeter.",
-  "A ribbon of courage, because your heart is soft and strong at the same time.",
-  "A star bell for every tomorrow I hope I get to spend cheering for you."
+  "A moon cake crumb for the girl who makes ordinary days taste like a celebration.",
+  "A velvet ribbon for every soft, brave thing I love about you.",
+  "A star bell for the next year of adventures I hope I get to share with you."
 ];
 
 window.catAdventureStatus = () => ({
@@ -45,11 +45,16 @@ let collected = 0;
 let cameraYaw = 0;
 let isDragging = false;
 let previousPointerX = 0;
+let catParts = {};
+let walkTime = 0;
 
 const materials = {
   grass: new THREE.MeshStandardMaterial({ color: 0x22392e, roughness: 0.88 }),
   path: new THREE.MeshStandardMaterial({ color: 0x665747, roughness: 0.92 }),
   cream: new THREE.MeshStandardMaterial({ color: 0xfff1d3, roughness: 0.64 }),
+  toast: new THREE.MeshStandardMaterial({ color: 0x74513d, roughness: 0.72 }),
+  deepToast: new THREE.MeshStandardMaterial({ color: 0x39261e, roughness: 0.78 }),
+  fluff: new THREE.MeshStandardMaterial({ color: 0xfff7e5, roughness: 0.82 }),
   black: new THREE.MeshStandardMaterial({ color: 0x10131a, roughness: 0.7 }),
   rose: new THREE.MeshStandardMaterial({ color: 0xee8aa0, roughness: 0.58 }),
   gold: new THREE.MeshStandardMaterial({ color: 0xf4ca73, emissive: 0x3c2706, roughness: 0.42 }),
@@ -130,30 +135,72 @@ function makeLantern(x, z) {
   world.add(lantern);
 }
 
+function makeTrailSign(x, z, textColorMaterial = materials.rose) {
+  const sign = new THREE.Group();
+  sign.add(mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.9, 8), materials.wood, [0, 0.45, 0]));
+  sign.add(mesh(new THREE.BoxGeometry(1.05, 0.42, 0.08), materials.cream, [0, 0.92, 0]));
+  sign.add(mesh(new THREE.BoxGeometry(0.72, 0.08, 0.1), textColorMaterial, [0, 0.98, 0.055]));
+  sign.add(mesh(new THREE.BoxGeometry(0.42, 0.06, 0.1), materials.gold, [0.12, 0.84, 0.055]));
+  sign.position.set(x, 0, z);
+  sign.rotation.y = Math.atan2(-x, -z);
+  world.add(sign);
+}
+
 function makeCat() {
   const cat = new THREE.Group();
-  const body = mesh(new THREE.SphereGeometry(0.55, 24, 16), materials.cream, [0, 0.62, 0], [1.2, 0.75, 0.85]);
-  const head = mesh(new THREE.SphereGeometry(0.42, 24, 16), materials.cream, [0, 1.16, 0.42], [1, 0.92, 1]);
-  const tail = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 12), materials.cream, [-0.58, 0.86, -0.32]);
-  tail.rotation.z = -0.72;
-  tail.rotation.x = 0.38;
+  const body = mesh(new THREE.SphereGeometry(0.62, 28, 18), materials.fluff, [0, 0.68, 0], [1.55, 0.86, 1.03]);
+  const chest = mesh(new THREE.SphereGeometry(0.36, 20, 14), materials.cream, [0, 0.72, 0.54], [1.06, 1.02, 0.42]);
+  const ruff = mesh(new THREE.TorusGeometry(0.42, 0.08, 10, 34), materials.fluff, [0, 1.02, 0.36]);
+  ruff.rotation.x = Math.PI / 2;
+
+  const head = mesh(new THREE.SphereGeometry(0.46, 28, 18), materials.fluff, [0, 1.22, 0.55], [1.08, 0.94, 1.02]);
+  const faceMask = mesh(new THREE.SphereGeometry(0.29, 20, 14), materials.toast, [0, 1.16, 0.88], [1.08, 0.76, 0.34]);
+  const muzzle = mesh(new THREE.SphereGeometry(0.15, 16, 10), materials.cream, [0, 1.07, 1.02], [1.3, 0.72, 0.55]);
+
+  const tailPivot = new THREE.Group();
+  tailPivot.position.set(-0.72, 0.78, -0.42);
+  const tail = mesh(new THREE.CylinderGeometry(0.13, 0.18, 1.25, 16), materials.toast, [0, 0.48, -0.24]);
+  tail.rotation.x = 0.95;
+  tail.rotation.z = -0.4;
+  const tailTip = mesh(new THREE.SphereGeometry(0.22, 18, 12), materials.deepToast, [-0.22, 0.92, -0.58], [0.9, 1.3, 0.9]);
+  tailPivot.add(tail, tailTip);
 
   const earGeo = new THREE.ConeGeometry(0.18, 0.36, 3);
-  const leftEar = mesh(earGeo, materials.cream, [-0.24, 1.54, 0.46]);
-  const rightEar = mesh(earGeo, materials.cream, [0.24, 1.54, 0.46]);
+  const leftEar = mesh(earGeo, materials.deepToast, [-0.28, 1.56, 0.55]);
+  const rightEar = mesh(earGeo, materials.deepToast, [0.28, 1.56, 0.55]);
   leftEar.rotation.y = Math.PI / 3;
   rightEar.rotation.y = Math.PI / 3;
 
   const eyeGeo = new THREE.SphereGeometry(0.045, 12, 8);
-  const leftEye = mesh(eyeGeo, materials.black, [-0.14, 1.2, 0.79]);
-  const rightEye = mesh(eyeGeo, materials.black, [0.14, 1.2, 0.79]);
-  const nose = mesh(new THREE.SphereGeometry(0.04, 12, 8), materials.rose, [0, 1.1, 0.83], [1.2, 0.8, 0.7]);
+  const leftEye = mesh(eyeGeo, materials.black, [-0.15, 1.22, 0.95]);
+  const rightEye = mesh(eyeGeo, materials.black, [0.15, 1.22, 0.95]);
+  const nose = mesh(new THREE.SphereGeometry(0.04, 12, 8), materials.rose, [0, 1.1, 1.08], [1.2, 0.8, 0.7]);
 
   const scarf = mesh(new THREE.TorusGeometry(0.36, 0.045, 8, 28), materials.rose, [0, 0.98, 0.31]);
   scarf.rotation.x = Math.PI / 2;
 
-  cat.add(body, head, tail, leftEar, rightEar, leftEye, rightEye, nose, scarf);
+  const legGeo = new THREE.SphereGeometry(0.15, 16, 10);
+  const legs = [
+    [-0.42, 0.29, 0.38],
+    [0.42, 0.29, 0.38],
+    [-0.48, 0.29, -0.34],
+    [0.48, 0.29, -0.34]
+  ].map(([x, y, z]) => {
+    const leg = new THREE.Group();
+    leg.position.set(x, y, z);
+    leg.add(mesh(legGeo, materials.toast, [0, 0, 0], [0.9, 1.35, 0.9]));
+    leg.add(mesh(new THREE.SphereGeometry(0.16, 16, 10), materials.deepToast, [0, -0.22, 0.08], [1.2, 0.5, 1.45]));
+    return leg;
+  });
+
+  const cheekLeft = mesh(new THREE.SphereGeometry(0.13, 14, 10), materials.cream, [-0.15, 1.07, 1.01], [1, 0.8, 0.68]);
+  const cheekRight = mesh(new THREE.SphereGeometry(0.13, 14, 10), materials.cream, [0.15, 1.07, 1.01], [1, 0.8, 0.68]);
+  const bow = mesh(new THREE.BoxGeometry(0.26, 0.14, 0.08), materials.gold, [0, 0.96, 0.78]);
+  bow.rotation.z = Math.PI / 4;
+
+  cat.add(body, chest, ruff, head, faceMask, muzzle, tailPivot, leftEar, rightEar, leftEye, rightEye, nose, scarf, cheekLeft, cheekRight, bow, ...legs);
   cat.position.set(-5.8, 0, 4.6);
+  catParts = { body, head, tailPivot, legs, ruff };
   world.add(cat);
   return cat;
 }
@@ -203,6 +250,9 @@ makeRoundedIsland();
 makeGift(-1.8, 3.8, materials.rose);
 makeGift(5.1, 2.5, materials.blue);
 makeGift(-4.2, -2.8, materials.mint);
+makeTrailSign(-5.3, 2.1, materials.rose);
+makeTrailSign(3.2, -3.8, materials.mint);
+makeTrailSign(4.8, 3.5, materials.blue);
 addPawPrints();
 
 const cat = makeCat();
@@ -233,7 +283,7 @@ function readMoveVector() {
 function resetGame() {
   collected = 0;
   scoreEl.textContent = "0 / 3";
-  messageText.textContent = "Find the first glowing charm.";
+  messageText.textContent = "Follow the paw prints to the first keepsake.";
   finale.classList.remove("is-visible");
   cat.position.set(-5.8, 0, 4.6);
   cat.rotation.y = 0;
@@ -258,7 +308,8 @@ function collectCharm(charm) {
 
 function update(delta) {
   const move = readMoveVector();
-  if (started && move.lengthSq() > 0) {
+  const isMoving = started && move.lengthSq() > 0;
+  if (isMoving) {
     const speed = 4.6;
     const yawMatrix = new THREE.Matrix4().makeRotationY(cameraYaw);
     move.applyMatrix4(yawMatrix);
@@ -268,7 +319,25 @@ function update(delta) {
     cat.rotation.y = Math.atan2(move.x, move.z);
   }
 
-  cat.position.y = Math.sin(clock.elapsedTime * 8) * 0.025;
+  if (isMoving) {
+    walkTime += delta * 8.5;
+  } else {
+    walkTime += delta * 1.4;
+  }
+  const stride = Math.sin(walkTime);
+  const counterStride = Math.sin(walkTime + Math.PI);
+  cat.position.y = (isMoving ? Math.abs(stride) * 0.045 : Math.sin(clock.elapsedTime * 2) * 0.018);
+  catParts.body.rotation.z = isMoving ? stride * 0.035 : Math.sin(clock.elapsedTime * 1.4) * 0.012;
+  catParts.head.rotation.x = isMoving ? -0.08 + Math.abs(stride) * 0.045 : Math.sin(clock.elapsedTime * 1.2) * 0.025;
+  catParts.ruff.rotation.z = Math.sin(clock.elapsedTime * 3.6) * 0.04;
+  catParts.tailPivot.rotation.y = Math.sin(walkTime * 0.8) * (isMoving ? 0.36 : 0.18);
+  catParts.tailPivot.rotation.z = 0.3 + Math.cos(walkTime * 0.7) * 0.08;
+  catParts.legs.forEach((leg, index) => {
+    const phase = index % 2 === 0 ? stride : counterStride;
+    leg.rotation.x = phase * (isMoving ? 0.62 : 0.06);
+    leg.position.y = 0.29 + Math.max(phase, 0) * (isMoving ? 0.08 : 0.01);
+  });
+
   charms.forEach((charm) => {
     charm.rotation.y += delta * 1.7;
     charm.position.y = Math.sin(clock.elapsedTime * 2.4 + charm.userData.index) * 0.12;
