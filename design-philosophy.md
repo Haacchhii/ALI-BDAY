@@ -1,11 +1,9 @@
-# Mooncat Playground
+# Ali's Birthday Forest
 
-Mooncat Playground turns a birthday greeting into a tiny world with rules, secrets, and affectionate discovery. The experience should feel meticulously crafted, as though a small toy diorama was built by hand and then brought to life with careful motion. Its inspiration is the playful spirit of drive-around web worlds, but its identity is softer: a fluffy Persian-Siamese cat, a moonlit garden, birthday keepsakes, and messages that reveal themselves through movement.
+Ali's Birthday Forest is a personal gift, not a professional portfolio. The structure borrows the playful explore-and-interact flow of navigable 3D portfolio worlds, but the tone is soft, affectionate, and birthday-first.
 
-The world communicates through scale and touch. The cat is deliberately small against the garden so that every collected keepsake feels like a little journey. The player should not be reading instructions for long; they should understand the place by moving through it, seeing warm lights, paw prints, gifts, trail signs, trees, and glowing objects arranged with painstaking attention.
+The experience begins with choice: four stylized low-poly cat avatars based on color schemes rather than photo likeness. After choosing a cat, the visitor enters a dusky forest clearing with warm lanterns, drifting fireflies, simple paths, and three clear birthday destinations.
 
-The cat should feel like a birthday character, not a marker. Its pale fluffy coat, darker ears, face, paws, and tail use the Siamese "toasting" idea, while the round body and ruff keep the softness of a Persian mix. The walk cycle is simple and readable: legs pad in alternating rhythm, the body bobs, the head dips, and the tail sways so the character feels alive even in a compact low-poly style.
+The three zones are intentionally small and editable: Your Achievements, Birthday Message from the Creator, and Ali Moments. Each zone has placeholder body text and image slots so the final personal content can be dropped in later.
 
-Color balances night and celebration: ink sky, deep grass, candle gold, rose ribbon, mint leaves, and cool blue stars. The palette should be romantic without becoming sugary, playful without becoming childish. Each material is simple, but the composition must feel like the product of deep expertise: clear silhouettes, readable interactive targets, and a camera that keeps the scene feeling intentional.
-
-Text remains sparse and reward-based. The interface borrows the utility of a game HUD while keeping a birthday-card tenderness in the messages. The final piece should feel polished enough to send as a personal gift, and lively enough that she wants to nudge the cat around one more time.
+The interface stays spatial. The forest remains visible behind the welcome modal and content panels, the HUD is compact, and the map/options/help buttons echo the interaction model without copying the original site's art direction. The palette follows deep forest shadow, canopy green, firefly gold, birthday pink, and parchment UI.

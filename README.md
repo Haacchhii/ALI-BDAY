@@ -1,6 +1,11 @@
-# Ali's Cat Adventure
+# Ali's Birthday Forest
 
-A tiny Three.js birthday adventure inspired by playful interactive web worlds. The star is a fluffy toasted Persian-Siamese cat with a full body, dark points, whiskers, tail motion, and a walking animation. The garden uses a curved trail, birthday stations, particle bursts, and smoother movement so it feels more like a polished mini world.
+A low-poly Three.js birthday gift for Ali. The visitor picks one of four cat avatars, explores a small lantern-lit forest, approaches glowing birthday zones, and opens warm content panels.
+
+Tech:
+- Vanilla Three.js for the 3D scene
+- `cannon-es` for lightweight tactile collision
+- Plain HTML/CSS/JS so it can deploy as a static site
 
 Run locally:
 
