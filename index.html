@@ -3,70 +3,76 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>For Your Birthday</title>
+    <title>Ali's Cat Adventure</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="experience" aria-label="Birthday website for your girlfriend">
-      <section class="hero" aria-labelledby="hero-title">
-        <img class="hero__image" src="birthday-conservatory.png" alt="Moonlit glass conservatory with candles and glowing flowers">
-        <div class="hero__veil"></div>
-        <nav class="topbar" aria-label="Birthday sections">
-          <a href="#note">Note</a>
-          <a href="#moments">Moments</a>
-          <a href="#wish">Wish</a>
-        </nav>
-        <div class="hero__content">
-          <p class="eyebrow">July 6, 2026</p>
-          <h1 id="hero-title">Happy birthday, my love.</h1>
-          <p class="hero__copy">Tonight is dressed up for you: candlelight, flowers, and a few little secrets waiting to be opened.</p>
-          <a class="hero__button" href="#note">Begin</a>
-        </div>
-        <a class="scroll-cue" href="#note" aria-label="Scroll to the birthday note"></a>
+    <main class="game-shell" aria-label="Ali birthday cat adventure">
+      <canvas id="world" tabindex="0" aria-label="Playable 3D cat adventure world"></canvas>
+
+      <section class="intro" id="intro" aria-labelledby="intro-title">
+        <p class="kicker">A tiny adventure for July 6</p>
+        <h1 id="intro-title">Ali's Cat Adventure</h1>
+        <p class="intro__copy">
+          Guide the little moon cat through the birthday garden. Collect three glowing charms to unlock a wish.
+        </p>
+        <button class="primary-action" id="startButton" type="button">Start adventure</button>
       </section>
 
-      <section class="note" id="note">
-        <div class="section-label">A small note</div>
-        <div class="note__layout">
-          <h2>You make ordinary days feel carefully lit.</h2>
+      <aside class="hud" aria-label="Game status">
+        <div>
+          <span class="hud__label">Charms</span>
+          <strong id="score">0 / 3</strong>
+        </div>
+        <div>
+          <span class="hud__label">Mood</span>
+          <strong>Moonlit</strong>
+        </div>
+        <button class="hud__button" id="resetButton" type="button">Reset</button>
+      </aside>
+
+      <section class="message-panel" id="messagePanel" aria-live="polite">
+        <p class="message-panel__label">Cat note</p>
+        <p id="messageText">Find the first glowing charm.</p>
+      </section>
+
+      <section class="controls" aria-label="Controls">
+        <div>
+          <span>Move</span>
+          <strong>WASD / Arrows</strong>
+        </div>
+        <div>
+          <span>Camera</span>
+          <strong>Drag</strong>
+        </div>
+        <div>
+          <span>Mobile</span>
+          <strong>Tap pads</strong>
+        </div>
+      </section>
+
+      <nav class="touch-controls" aria-label="Mobile movement controls">
+        <button type="button" data-move="up">Up</button>
+        <div>
+          <button type="button" data-move="left">Left</button>
+          <button type="button" data-move="down">Down</button>
+          <button type="button" data-move="right">Right</button>
+        </div>
+      </nav>
+
+      <section class="finale" id="finale" aria-labelledby="finale-title">
+        <div class="finale__card">
+          <p class="kicker">All charms found</p>
+          <h2 id="finale-title">Happy birthday, my love.</h2>
           <p>
-            I wanted this to feel like stepping into a quiet place made only for you. Not loud, not rushed,
-            just beautiful in the way you make life beautiful: with warmth, grace, and the kind of smile that
-            stays with me long after the moment passes.
+            The garden, the stars, and one very determined cat agree: may this year be gentle,
+            bright, and full of moments that make you feel adored.
           </p>
-        </div>
-      </section>
-
-      <section class="moments" id="moments" aria-labelledby="moments-title">
-        <div class="section-label">Open these</div>
-        <h2 id="moments-title">Three tiny birthday lanterns</h2>
-        <div class="lantern-grid">
-          <button class="lantern" type="button" data-message="For the way you laugh, even the room seems to remember it.">
-            <span>01</span>
-            <strong>Your laugh</strong>
-          </button>
-          <button class="lantern" type="button" data-message="For the softness you bring into hard days, and the courage you carry so naturally.">
-            <span>02</span>
-            <strong>Your heart</strong>
-          </button>
-          <button class="lantern" type="button" data-message="For every future birthday I hope I get to make a little more magical.">
-            <span>03</span>
-            <strong>Our tomorrows</strong>
-          </button>
-        </div>
-        <p class="revealed-message" aria-live="polite">Tap a lantern.</p>
-      </section>
-
-      <section class="wish" id="wish">
-        <div class="wish__panel">
-          <p class="section-label">Birthday wish</p>
-          <h2>May this year meet you gently and surprise you beautifully.</h2>
-          <p>And may you always know that being loved by you is one of my favorite things about being alive.</p>
-          <button class="wish__button" type="button">Make the room sparkle</button>
+          <button class="primary-action" id="playAgainButton" type="button">Play again</button>
         </div>
       </section>
     </main>
-    <div class="sparkle-field" aria-hidden="true"></div>
-    <script src="script.js"></script>
+
+    <script type="module" src="script.js"></script>
   </body>
 </html>

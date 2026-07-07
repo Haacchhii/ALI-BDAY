@@ -1,9 +1,9 @@
-# Luminous Keepsake
+# Mooncat Playground
 
-Luminous Keepsake treats romance as something observed with patience: moonlight, candlelight, glass, petal, and memory arranged with careful restraint. The work should feel meticulously crafted, as if every glow, edge, and pause was tuned by hand over many hours. It is not a birthday card shouting from the screen; it is a private room made visible.
+Mooncat Playground turns a birthday greeting into a tiny world with rules, secrets, and affectionate discovery. The experience should feel meticulously crafted, as though a small toy diorama was built by hand and then brought to life with careful motion. Its inspiration is the playful spirit of drive-around web worlds, but its identity is softer: a cat, a moonlit garden, glowing charms, and messages that reveal themselves through movement.
 
-Space carries the emotion. The first view opens like a conservatory at night, with depth, softness, and one clear invitation. Details arrive slowly through interaction, so the viewer feels she is discovering small artifacts left just for her. The page should look like the product of deep expertise, with the rhythm of a gallery installation rather than a template.
+The world communicates through scale and touch. The cat is deliberately small against the garden so that every collected charm feels like a little journey. The player should not be reading instructions for long; they should understand the place by moving through it, seeing warm lights, paw prints, gifts, trees, and glowing objects arranged with painstaking attention.
 
-Color is held to a romantic but mature range: ink, rose, candle gold, ivory, and botanical green. Nothing should become sugary or childish. The warmth comes from contrast, from the tension between cool night and intimate flame, and from painstaking attention to how the palette moves across sections.
+Color balances night and celebration: ink sky, deep grass, candle gold, rose ribbon, mint leaves, and cool blue stars. The palette should be romantic without becoming sugary, playful without becoming childish. Each material is simple, but the composition must feel like the product of deep expertise: clear silhouettes, readable interactive targets, and a camera that keeps the scene feeling intentional.
 
-Typography is sparse and deliberate. Words are keepsakes, not filler. Each line must have room to breathe, and the interface should preserve a master-level sense of balance on mobile and desktop. The final impression should be polished enough to feel personal, cinematic, and quietly unforgettable.
+Text remains sparse and reward-based. The interface borrows the utility of a game HUD while keeping a birthday-card tenderness in the messages. The final piece should feel polished enough to send as a personal gift, and lively enough that she wants to nudge the cat around one more time.

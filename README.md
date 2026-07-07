@@ -1,5 +1,11 @@
-# ALI Birthday
+# Ali's Cat Adventure
 
-A self-contained birthday web experience.
+A tiny Three.js birthday adventure inspired by playful interactive web worlds.
 
-Open `index.html` in a browser to view it.
+Run locally:
+
+```bash
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
