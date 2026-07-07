@@ -28,7 +28,7 @@ const joystickKnob = document.querySelector("#joystickKnob");
 const avatarSchemes = [
   {
     id: "siamese",
-    name: "Siamese",
+    name: "Footie",
     note: "Ivory coat, toasted points, pale blue eyes.",
     body: "#f2dfbf",
     head: "#ead5b6",
@@ -39,7 +39,7 @@ const avatarSchemes = [
   },
   {
     id: "tabby",
-    name: "Tabby",
+    name: "Mochi",
     note: "Warm brown-gold fur with bold sleepy stripes.",
     body: "#a77a42",
     head: "#bc8b4c",
@@ -50,7 +50,7 @@ const avatarSchemes = [
   },
   {
     id: "shadow",
-    name: "Shadow",
+    name: "Stormie",
     note: "Soft black silhouette with glowing forest eyes.",
     body: "#111211",
     head: "#171817",
@@ -61,7 +61,7 @@ const avatarSchemes = [
   },
   {
     id: "ginger",
-    name: "Ginger",
+    name: "Sunnie",
     note: "Marmalade orange with sunny darker stripes.",
     body: "#d68531",
     head: "#e79a43",
@@ -156,11 +156,24 @@ let qualityHigh = true;
 let audioContext = null;
 let ambienceGain = null;
 let walkTime = 0;
+let catBobOffset = 0;
 
 const colliders = [];
 const zoneMeshes = [];
 const fireflies = [];
 const reusableVec3 = new THREE.Vector3();
+
+window.birthdayForestStatus = () => ({
+  sceneStarted,
+  avatar: selectedAvatar.name,
+  cat: catBody ? {
+    x: Number(catBody.position.x.toFixed(2)),
+    y: Number(catBody.position.y.toFixed(2)),
+    z: Number(catBody.position.z.toFixed(2)),
+    vx: Number(catBody.velocity.x.toFixed(2)),
+    vz: Number(catBody.velocity.z.toFixed(2))
+  } : null
+});
 
 function colorMaterial(color, options = {}) {
   return new THREE.MeshStandardMaterial({
@@ -463,8 +476,8 @@ function createCat(avatar) {
     linearDamping: 0.68,
     angularDamping: 0.9
   });
-  catBody.addShape(new CANNON.Sphere(0.72), new CANNON.Vec3(0, 0.9, 0));
-  catBody.position.set(0, 1.2, 19);
+  catBody.addShape(new CANNON.Sphere(0.72));
+  catBody.position.set(0, 0.9, 19);
   physicsWorld.addBody(catBody);
 
   catGroup = group;
@@ -472,14 +485,15 @@ function createCat(avatar) {
 }
 
 function syncCatMesh() {
-  catGroup.position.set(catBody.position.x, catBody.position.y - 0.85, catBody.position.z);
+  catGroup.position.set(catBody.position.x, catBody.position.y - 0.72 + catBobOffset, catBody.position.z);
 }
 
 function resetCat() {
-  catBody.position.set(0, 1.2, 19);
+  catBody.position.set(0, 0.9, 19);
   catBody.velocity.set(0, 0, 0);
   catBody.angularVelocity.set(0, 0, 0);
   cameraYaw = 0;
+  catBobOffset = 0;
   syncCatMesh();
 }
 
@@ -570,9 +584,16 @@ function updateMovement(delta) {
   const input = readInputVector();
   const yawMatrix = new THREE.Matrix4().makeRotationY(cameraYaw);
   const direction = new THREE.Vector3(input.x, 0, input.y).applyMatrix4(yawMatrix);
-  const speed = 10.5;
-  catBody.velocity.x += (direction.x * speed - catBody.velocity.x) * Math.min(1, delta * 7.5);
-  catBody.velocity.z += (direction.z * speed - catBody.velocity.z) * Math.min(1, delta * 7.5);
+  const speed = 8.2;
+  const hasInput = input.lengthSq() > 0.001;
+
+  if (hasInput) {
+    catBody.velocity.x = direction.x * speed;
+    catBody.velocity.z = direction.z * speed;
+  } else {
+    catBody.velocity.x *= Math.pow(0.02, delta);
+    catBody.velocity.z *= Math.pow(0.02, delta);
+  }
 
   const isMoving = Math.abs(catBody.velocity.x) + Math.abs(catBody.velocity.z) > 0.35;
   if (isMoving) {
@@ -581,6 +602,7 @@ function updateMovement(delta) {
 
   walkTime += delta * (isMoving ? 9 : 1.6);
   const stride = Math.sin(walkTime);
+  catBobOffset = isMoving ? Math.abs(stride) * 0.055 : Math.sin(walkTime * 0.7) * 0.01;
   catParts.body.rotation.y = isMoving ? stride * 0.04 : Math.sin(walkTime) * 0.01;
   catParts.head.rotation.x = isMoving ? -0.07 + Math.abs(stride) * 0.04 : Math.sin(walkTime * 0.7) * 0.02;
   catParts.tailPivot.rotation.y = Math.sin(walkTime * 0.8) * (isMoving ? 0.42 : 0.2);
