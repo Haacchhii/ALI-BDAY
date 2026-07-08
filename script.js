@@ -128,7 +128,7 @@ const zoneData = [
     icon: "★",
     color: 0xf4c869,
     position: new THREE.Vector3(18, 0, -12),
-    body: "Placeholder for Ali's wins, milestones, tiny victories, and every reason she deserves to feel proud today. Replace this with specific achievements, inside jokes, or little medals.",
+    body: "Here are your achievements for this year and mostly recent lang kasi that are the best achievements and i am so proud of my baby for that, hope you like this simple viewingch and new way hehehe",
     images: achievementImages.map((fileName) => pictureUrl(pictureFolders.achievements, fileName)),
     slots: ["Achievement photo", "Medal note", "Memory card"]
   },
@@ -139,7 +139,7 @@ const zoneData = [
     icon: "♡",
     color: 0xe8a5c4,
     position: new THREE.Vector3(0, 0, 0),
-    body: "Placeholder for the emotional birthday letter. This is the heart of the forest: write the message you want Ali to remember after she closes the tab.",
+    body: "Happy Birthday to my ALIIII!! I just want to say that happy birthday to you and thank you always lovey for being the best for me, our relationship and to the people who you treasure, thank you for always being there for me and yung mga pinapag gagawa mo para sa akin ay never unnoticed, i always appreciate you and the stuff you do for me. Thank you for being the best in every aspect in our relationship at i always see your efforts in those every aspects lalo na for being there for me and for the stuff you support me in. always know that the same goes for you where i am always here to support you no matter what you do and how you do it. I always appreciate it lovey that you help me as well in the different problems that i had and once i get stable with my job ay you know na naman na i will return the favor. I'm sorry for the troubles that i have caused you and for our aways and all that, i hope you know that we have our arguments and misunderstandings ay yun po ay para maging mas maayos ang ating relationship. Thank you for guiding me with the ways that you know and what you have experienced na lovey. We will have more bdays and celebrations about other things in the future and this is just the start, Good luck with the future work and always always be Ali okay? Wag na lagi mag panic kasi it is organic hehehehehe, just be yourself and always have the pride that you can do it no matter what ha? I always love you my ali and i hope you enjoy your birthday and no matter what ay nadito ako lagi for my baby. MWAAAAAAAAAAA!",
     slots: ["Letter image", "Favorite line", "Secret note"]
   },
   {
@@ -149,7 +149,7 @@ const zoneData = [
     icon: "▧",
     color: 0x8ec7ff,
     position: new THREE.Vector3(-16, 0, 15),
-    body: "Placeholder gallery for favorite photos, screenshots, dates, silly moments, and soft memories. Swap these slots with real images later.",
+    body: "Here are some ali moments for this year and these are the pictures i like best where it is mostly about you hehehe simple langch",
     images: momentImages.map((fileName) => pictureUrl(pictureFolders.moments, fileName)),
     slots: ["Photo 01", "Photo 02", "Photo 03", "Photo 04", "Photo 05", "Photo 06"]
   }
