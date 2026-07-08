@@ -380,32 +380,54 @@ function makeLantern(position, color, icon) {
 function makePostingBoard(zone, localPosition) {
   const board = new THREE.Group();
   const accentMat = colorMaterial(zone.color, { emissive: zone.color });
-  const boardBack = mesh(new THREE.BoxGeometry(2.85, 1.75, 0.16), materials.parchment, [0, 1.58, 0]);
-  const boardCap = mesh(new THREE.BoxGeometry(3.1, 0.22, 0.22), materials.fence, [0, 2.56, 0]);
-  const postLeft = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.65, 8), materials.fence, [-1.18, 0.72, -0.03]);
-  const postRight = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.65, 8), materials.fence, [1.18, 0.72, -0.03]);
-  const titleStrip = mesh(new THREE.BoxGeometry(1.55, 0.18, 0.08), accentMat, [0, 2.18, 0.12]);
-  const pinLeft = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [-1.16, 2.24, 0.13]);
-  const pinRight = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [1.16, 2.24, 0.13]);
-  board.add(boardBack, boardCap, postLeft, postRight, titleStrip, pinLeft, pinRight);
+  const boardBack = mesh(new THREE.BoxGeometry(4.25, 2.7, 0.18), materials.parchment, [0, 2.0, 0]);
+  const boardFrameTop = mesh(new THREE.BoxGeometry(4.65, 0.26, 0.26), materials.fence, [0, 3.48, 0]);
+  const boardFrameBottom = mesh(new THREE.BoxGeometry(4.65, 0.22, 0.22), materials.fence, [0, 0.54, 0]);
+  const boardFrameLeft = mesh(new THREE.BoxGeometry(0.22, 2.86, 0.22), materials.fence, [-2.25, 2.0, 0]);
+  const boardFrameRight = mesh(new THREE.BoxGeometry(0.22, 2.86, 0.22), materials.fence, [2.25, 2.0, 0]);
+  const postLeft = mesh(new THREE.CylinderGeometry(0.1, 0.13, 2.1, 8), materials.fence, [-1.82, 0.88, -0.05]);
+  const postRight = mesh(new THREE.CylinderGeometry(0.1, 0.13, 2.1, 8), materials.fence, [1.82, 0.88, -0.05]);
+  const titleStrip = mesh(new THREE.BoxGeometry(2.55, 0.22, 0.1), accentMat, [0, 3.05, 0.15]);
+  const previewCard = mesh(new THREE.BoxGeometry(2.95, 1.08, 0.1), colorMaterial(0xfff7e6), [-0.42, 2.18, 0.16]);
+  const previewLineOne = mesh(new THREE.BoxGeometry(1.8, 0.08, 0.08), accentMat, [-0.7, 2.45, 0.23]);
+  const previewLineTwo = mesh(new THREE.BoxGeometry(2.2, 0.06, 0.08), materials.fence, [-0.5, 2.2, 0.23]);
+  const previewLineThree = mesh(new THREE.BoxGeometry(1.55, 0.06, 0.08), materials.fence, [-0.82, 2.0, 0.23]);
+  const pinLeft = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [-1.84, 3.18, 0.17]);
+  const pinRight = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [1.84, 3.18, 0.17]);
+  board.add(
+    boardBack,
+    boardFrameTop,
+    boardFrameBottom,
+    boardFrameLeft,
+    boardFrameRight,
+    postLeft,
+    postRight,
+    titleStrip,
+    previewCard,
+    previewLineOne,
+    previewLineTwo,
+    previewLineThree,
+    pinLeft,
+    pinRight
+  );
 
-  const slotCount = zone.slots.length > 3 ? 6 : 3;
+  const slotCount = zone.slots.length > 3 ? 4 : 3;
   for (let i = 0; i < slotCount; i += 1) {
-    const col = i % 3;
-    const row = Math.floor(i / 3);
+    const col = i % 2;
+    const row = Math.floor(i / 2);
     const slot = mesh(
-      new THREE.BoxGeometry(0.62, 0.46, 0.08),
+      new THREE.BoxGeometry(0.68, 0.5, 0.09),
       i % 2 ? materials.white : colorMaterial(0xe8dcc8),
-      [-0.78 + col * 0.78, 1.62 - row * 0.58, 0.14]
+      [1.18 + col * 0.68, 1.72 - row * 0.58, 0.18]
     );
-    const photoGlow = mesh(new THREE.BoxGeometry(0.38, 0.06, 0.09), accentMat, [-0.78 + col * 0.78, 1.39 - row * 0.58, 0.19]);
+    const photoGlow = mesh(new THREE.BoxGeometry(0.38, 0.06, 0.08), accentMat, [1.18 + col * 0.68, 1.49 - row * 0.58, 0.25]);
     board.add(slot, photoGlow);
   }
 
   const toCenter = localPosition.clone().multiplyScalar(-1);
   board.position.copy(localPosition);
   board.rotation.y = Math.atan2(toCenter.x, toCenter.z);
-  board.userData.anchorLocal = localPosition.clone().add(new THREE.Vector3(0, 2.25, 0));
+  board.userData.anchorLocal = localPosition.clone().add(new THREE.Vector3(0, 3.2, 0));
   return board;
 }
 
@@ -422,14 +444,19 @@ function makeZone(zone) {
   const lantern = makeLantern(new THREE.Vector3(0, 0, 0), zone.color, zone.icon);
   zoneGroup.add(lantern);
   const zoneDirection = zone.position.lengthSq() > 0.01 ? zone.position.clone().normalize() : new THREE.Vector3(0, 0, 1);
-  const side = new THREE.Vector3(-zoneDirection.z, 0, zoneDirection.x).multiplyScalar(2.75);
-  const backFromPath = zoneDirection.clone().multiplyScalar(-1.05);
+  const side = new THREE.Vector3(-zoneDirection.z, 0, zoneDirection.x).multiplyScalar(5.85);
+  const backFromPath = zoneDirection.clone().multiplyScalar(-2.2);
   const board = makePostingBoard(zone, side.add(backFromPath));
   zoneGroup.add(board);
   zoneGroup.position.copy(zone.position);
   zoneGroup.userData.zone = zone;
   zoneGroup.userData.board = board;
   scene.add(zoneGroup);
+  obstacleCircles.push({
+    x: zone.position.x + board.position.x,
+    z: zone.position.z + board.position.z,
+    radius: 2.35
+  });
   zoneMeshes.push(zoneGroup);
 }
 
