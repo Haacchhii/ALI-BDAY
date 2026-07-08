@@ -459,23 +459,20 @@ function makeLantern(position, color, icon) {
   return group;
 }
 
-function makePostingBoard(zone, localPosition) {
+function makePostingBoard(zone, localPosition, pageIndex = 0, boardIndex = 0, visibleBoardCount = 1) {
   const board = new THREE.Group();
   const accentMat = colorMaterial(zone.color, { emissive: zone.color });
-  const boardBack = mesh(new THREE.BoxGeometry(4.25, 2.7, 0.18), materials.parchment, [0, 2.0, 0]);
-  const boardFrameTop = mesh(new THREE.BoxGeometry(4.65, 0.26, 0.26), materials.fence, [0, 3.48, 0]);
-  const boardFrameBottom = mesh(new THREE.BoxGeometry(4.65, 0.22, 0.22), materials.fence, [0, 0.54, 0]);
-  const boardFrameLeft = mesh(new THREE.BoxGeometry(0.22, 2.86, 0.22), materials.fence, [-2.25, 2.0, 0]);
-  const boardFrameRight = mesh(new THREE.BoxGeometry(0.22, 2.86, 0.22), materials.fence, [2.25, 2.0, 0]);
-  const postLeft = mesh(new THREE.CylinderGeometry(0.1, 0.13, 2.1, 8), materials.fence, [-1.82, 0.88, -0.05]);
-  const postRight = mesh(new THREE.CylinderGeometry(0.1, 0.13, 2.1, 8), materials.fence, [1.82, 0.88, -0.05]);
-  const titleStrip = mesh(new THREE.BoxGeometry(2.55, 0.22, 0.1), accentMat, [0, 3.05, 0.15]);
-  const previewCard = mesh(new THREE.BoxGeometry(2.95, 1.08, 0.1), colorMaterial(0xfff7e6), [-0.42, 2.18, 0.16]);
-  const previewLineOne = mesh(new THREE.BoxGeometry(1.8, 0.08, 0.08), accentMat, [-0.7, 2.45, 0.23]);
-  const previewLineTwo = mesh(new THREE.BoxGeometry(2.2, 0.06, 0.08), materials.fence, [-0.5, 2.2, 0.23]);
-  const previewLineThree = mesh(new THREE.BoxGeometry(1.55, 0.06, 0.08), materials.fence, [-0.82, 2.0, 0.23]);
-  const pinLeft = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [-1.84, 3.18, 0.17]);
-  const pinRight = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [1.84, 3.18, 0.17]);
+  const boardBack = mesh(new THREE.BoxGeometry(5.6, 3.35, 0.2), materials.parchment, [0, 2.25, 0]);
+  const boardFrameTop = mesh(new THREE.BoxGeometry(6.05, 0.32, 0.3), materials.fence, [0, 4.03, 0]);
+  const boardFrameBottom = mesh(new THREE.BoxGeometry(6.05, 0.28, 0.28), materials.fence, [0, 0.46, 0]);
+  const boardFrameLeft = mesh(new THREE.BoxGeometry(0.28, 3.5, 0.28), materials.fence, [-2.92, 2.25, 0]);
+  const boardFrameRight = mesh(new THREE.BoxGeometry(0.28, 3.5, 0.28), materials.fence, [2.92, 2.25, 0]);
+  const postLeft = mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.45, 8), materials.fence, [-2.35, 0.9, -0.05]);
+  const postRight = mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.45, 8), materials.fence, [2.35, 0.9, -0.05]);
+  const titleStrip = mesh(new THREE.BoxGeometry(3.3, 0.26, 0.1), accentMat, [0, 3.55, 0.16]);
+  const pageBadge = mesh(new THREE.BoxGeometry(0.66, 0.28, 0.1), boardIndex === 0 ? accentMat : materials.gold, [2.1, 3.55, 0.17]);
+  const pinLeft = mesh(new THREE.SphereGeometry(0.09, 10, 8), materials.gold, [-2.42, 3.72, 0.18]);
+  const pinRight = mesh(new THREE.SphereGeometry(0.09, 10, 8), materials.gold, [2.42, 3.72, 0.18]);
   board.add(
     boardBack,
     boardFrameTop,
@@ -485,40 +482,52 @@ function makePostingBoard(zone, localPosition) {
     postLeft,
     postRight,
     titleStrip,
-    previewCard,
-    previewLineOne,
-    previewLineTwo,
-    previewLineThree,
+    pageBadge,
     pinLeft,
     pinRight
   );
 
-  const boardPages = getZonePages(zone);
-  const firstPage = boardPages[0];
-  for (let i = 0; i < 4; i += 1) {
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const item = firstPage[i];
+  const boardPages = getZonePages(zone, 3);
+  const pageItems = boardPages[pageIndex] || [];
+  const largeItem = pageItems[0];
+  const largeIsPhoto = typeof largeItem === "string" && largeItem.match(/\.(jpe?g|png|webp|gif)$/i);
+  const heroPreview = mesh(
+    new THREE.BoxGeometry(2.78, 1.82, 0.1),
+    largeIsPhoto ? makePhotoMaterial(largeItem) : colorMaterial(0xfff7e6),
+    [-1.12, 2.45, 0.18]
+  );
+  board.add(heroPreview);
+
+  if (!largeIsPhoto) {
+    board.add(
+      mesh(new THREE.BoxGeometry(1.85, 0.09, 0.08), accentMat, [-1.25, 2.9, 0.25]),
+      mesh(new THREE.BoxGeometry(2.2, 0.07, 0.08), materials.fence, [-1.08, 2.52, 0.25]),
+      mesh(new THREE.BoxGeometry(1.55, 0.07, 0.08), materials.fence, [-1.42, 2.28, 0.25])
+    );
+  }
+
+  for (let i = 1; i < 3; i += 1) {
+    const item = pageItems[i];
     const isPhoto = typeof item === "string" && item.match(/\.(jpe?g|png|webp|gif)$/i);
     const slot = mesh(
-      new THREE.BoxGeometry(0.68, 0.5, 0.09),
-      isPhoto ? makePhotoMaterial(item) : (i % 2 ? materials.white : colorMaterial(0xe8dcc8)),
-      [1.18 + col * 0.68, 1.72 - row * 0.58, 0.18]
+      new THREE.BoxGeometry(1.54, 0.9, 0.09),
+      isPhoto ? makePhotoMaterial(item) : materials.white,
+      [1.55, 2.9 - (i - 1) * 1.06, 0.18]
     );
-    const photoGlow = mesh(new THREE.BoxGeometry(0.38, 0.06, 0.08), accentMat, [1.18 + col * 0.68, 1.49 - row * 0.58, 0.25]);
+    const photoGlow = mesh(new THREE.BoxGeometry(0.82, 0.07, 0.08), accentMat, [1.55, 2.5 - (i - 1) * 1.06, 0.25]);
     board.add(slot, photoGlow);
   }
 
-  if (boardPages.length > 1) {
-    for (let i = 0; i < Math.min(boardPages.length, 5); i += 1) {
+  if (boardPages.length > 1 || visibleBoardCount > 1) {
+    for (let i = 0; i < Math.min(Math.max(boardPages.length, visibleBoardCount), 6); i += 1) {
       const pageTab = mesh(
-        new THREE.BoxGeometry(0.28, 0.08, 0.08),
-        i === 0 ? accentMat : materials.gold,
-        [-0.56 + i * 0.32, 0.82, 0.2]
+        new THREE.BoxGeometry(0.36, 0.1, 0.08),
+        i === pageIndex ? accentMat : materials.gold,
+        [-0.92 + i * 0.42, 0.86, 0.22]
       );
       board.add(pageTab);
     }
-    const nextMarker = mesh(new THREE.ConeGeometry(0.13, 0.32, 3), accentMat, [1.86, 0.84, 0.2]);
+    const nextMarker = mesh(new THREE.ConeGeometry(0.16, 0.38, 3), accentMat, [2.35, 0.86, 0.22]);
     nextMarker.rotation.z = -Math.PI / 2;
     board.add(nextMarker);
   }
@@ -526,7 +535,7 @@ function makePostingBoard(zone, localPosition) {
   const toCenter = localPosition.clone().multiplyScalar(-1);
   board.position.copy(localPosition);
   board.rotation.y = Math.atan2(toCenter.x, toCenter.z);
-  board.userData.anchorLocal = localPosition.clone().add(new THREE.Vector3(0, 3.2, 0));
+  board.userData.anchorLocal = localPosition.clone().add(new THREE.Vector3(0, 3.75, 0));
   return board;
 }
 
@@ -543,18 +552,29 @@ function makeZone(zone) {
   const lantern = makeLantern(new THREE.Vector3(0, 0, 0), zone.color, zone.icon);
   zoneGroup.add(lantern);
   const zoneDirection = zone.position.lengthSq() > 0.01 ? zone.position.clone().normalize() : new THREE.Vector3(0, 0, 1);
-  const side = new THREE.Vector3(-zoneDirection.z, 0, zoneDirection.x).multiplyScalar(5.85);
-  const backFromPath = zoneDirection.clone().multiplyScalar(-2.2);
-  const board = makePostingBoard(zone, side.add(backFromPath));
-  zoneGroup.add(board);
+  const sideDirection = new THREE.Vector3(-zoneDirection.z, 0, zoneDirection.x);
+  const boardPages = getZonePages(zone, 3);
+  const visibleBoardCount = zone.images?.length ? Math.min(3, boardPages.length) : 1;
+  const boards = [];
+  for (let i = 0; i < visibleBoardCount; i += 1) {
+    const side = sideDirection.clone().multiplyScalar(9.4);
+    const alongPath = zoneDirection.clone().multiplyScalar((i - (visibleBoardCount - 1) / 2) * 5.8 - 2.6);
+    const backFromPath = zoneDirection.clone().multiplyScalar(-3.3);
+    const board = makePostingBoard(zone, side.add(alongPath).add(backFromPath), i, i, visibleBoardCount);
+    zoneGroup.add(board);
+    boards.push(board);
+  }
   zoneGroup.position.copy(zone.position);
   zoneGroup.userData.zone = zone;
-  zoneGroup.userData.board = board;
+  zoneGroup.userData.board = boards[0];
+  zoneGroup.userData.boards = boards;
   scene.add(zoneGroup);
-  obstacleCircles.push({
-    x: zone.position.x + board.position.x,
-    z: zone.position.z + board.position.z,
-    radius: 2.35
+  boards.forEach((board) => {
+    obstacleCircles.push({
+      x: zone.position.x + board.position.x,
+      z: zone.position.z + board.position.z,
+      radius: 3.05
+    });
   });
   zoneMeshes.push(zoneGroup);
 }
