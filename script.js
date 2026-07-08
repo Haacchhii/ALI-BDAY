@@ -116,6 +116,16 @@ const momentImages = [
   "Messenger_creation_F8035717-A06E-40B6-96EC-710440D0E583.jpeg"
 ];
 
+const catImages = [
+  "06f94719-e22c-4ceb-865a-3eccfd6681c9.jpg",
+  "0fbd49ec-a0ba-48c0-b673-a51b613a9b93.jpg",
+  "21ff3eab-bd1b-4a1b-8a33-8261cc5870b8.jpg",
+  "86a2d42e-ded3-4692-ab8f-ac1d63081bda.jpg",
+  "9a784a45-bed8-40c9-81cd-cf26cd90f56a.jpg",
+  "e170480f-6543-4f55-8d66-41fe0841f668.jpg",
+  "f9dbef41-1e4b-47d3-b071-7d34888d762e.jpg"
+].map((fileName) => pictureUrl("Pictures/Cats", fileName));
+
 function pictureUrl(folder, fileName) {
   return encodeURI(`${folder}/${fileName}`);
 }
@@ -586,6 +596,42 @@ function makeSectionHeader(zone, localPosition) {
   return header;
 }
 
+function makeDecorativeCatBoard(imageUrl, position, rotationY = 0, scale = 1) {
+  const board = new THREE.Group();
+  const photoMat = makePhotoMaterial(imageUrl);
+  const backing = mesh(new THREE.BoxGeometry(3.2, 4.05, 0.18), materials.parchment, [0, 2.55, -0.04], [scale, scale, scale]);
+  const photo = mesh(new THREE.BoxGeometry(2.68, 3.38, 0.1), photoMat, [0, 2.55, 0.1], [scale, scale, scale]);
+  const rearPhoto = mesh(new THREE.BoxGeometry(2.68, 3.38, 0.1), photoMat, [0, 2.55, -0.21], [scale, scale, scale]);
+  const topRail = mesh(new THREE.BoxGeometry(3.58, 0.22, 0.26), materials.fence, [0, 4.72, -0.02], [scale, scale, scale]);
+  const bottomRail = mesh(new THREE.BoxGeometry(3.58, 0.2, 0.24), materials.fence, [0, 0.38, -0.02], [scale, scale, scale]);
+  const leftRail = mesh(new THREE.BoxGeometry(0.2, 4.2, 0.24), materials.fence, [-1.75, 2.55, -0.02], [scale, scale, scale]);
+  const rightRail = mesh(new THREE.BoxGeometry(0.2, 4.2, 0.24), materials.fence, [1.75, 2.55, -0.02], [scale, scale, scale]);
+  const leftPost = mesh(new THREE.CylinderGeometry(0.09, 0.12, 2.45, 8), materials.fence, [-1.34, 0.92, -0.08], [scale, scale, scale]);
+  const rightPost = mesh(new THREE.CylinderGeometry(0.09, 0.12, 2.45, 8), materials.fence, [1.34, 0.92, -0.08], [scale, scale, scale]);
+  const caption = mesh(new THREE.BoxGeometry(1.55, 0.16, 0.08), materials.gold, [0, 0.72, 0.14], [scale, scale, scale]);
+  board.add(backing, photo, rearPhoto, topRail, bottomRail, leftRail, rightRail, leftPost, rightPost, caption);
+  board.position.copy(position);
+  board.rotation.y = rotationY;
+  scene.add(board);
+  obstacleCircles.push({ x: position.x, z: position.z, radius: 1.65 * scale });
+}
+
+function addDecorativeCatBoards() {
+  const placements = [
+    [new THREE.Vector3(-8, 0, 13.5), 1.04],
+    [new THREE.Vector3(8, 0, 13.5), 1.04],
+    [new THREE.Vector3(-19, 0, 5), 0.98],
+    [new THREE.Vector3(19, 0, 2), 0.98],
+    [new THREE.Vector3(-10, 0, -12), 1.0],
+    [new THREE.Vector3(10, 0, -16), 1.0],
+    [new THREE.Vector3(0, 0, -24), 0.96]
+  ].map(([position, scale]) => [position, Math.atan2(-position.x, -position.z), scale]);
+  catImages.forEach((imageUrl, index) => {
+    const [position, rotation, scale] = placements[index] || placements[index % placements.length];
+    makeDecorativeCatBoard(imageUrl, position, rotation, scale);
+  });
+}
+
 function makeZone(zone) {
   const zoneGroup = new THREE.Group();
   const padMaterial = colorMaterial(zone.color, { emissive: zone.color });
@@ -743,6 +789,7 @@ function buildWorld() {
   setupLights();
   makeGround();
   populateForest();
+  addDecorativeCatBoards();
   zoneData.forEach(makeZone);
   createFireflies(qualityHigh ? 80 : 32);
   createCat(selectedAvatar);
