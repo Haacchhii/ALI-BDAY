@@ -157,8 +157,11 @@ let audioContext = null;
 let ambienceGain = null;
 let walkTime = 0;
 let catBobOffset = 0;
+const playerPosition = new THREE.Vector3(0, 0.72, 19);
+const playerVelocity = new THREE.Vector3();
 
 const colliders = [];
+const obstacleCircles = [];
 const zoneMeshes = [];
 const fireflies = [];
 const reusableVec3 = new THREE.Vector3();
@@ -327,6 +330,7 @@ function makeTree(x, z, type = "pine", scale = 1) {
   tree.rotation.y = Math.sin(x * 5 + z) * 0.5;
   scene.add(tree);
   addPhysicsCylinder(new THREE.Vector3(x, 0.9, z), 0.72 * scale, 2.2 * scale);
+  obstacleCircles.push({ x, z, radius: 0.95 * scale });
 }
 
 function populateForest() {
@@ -470,14 +474,14 @@ function createCat(avatar) {
   catParts = { body, head, tailPivot, legs };
 
   catBody = new CANNON.Body({
-    mass: 1,
-    fixedRotation: true,
-    material: catMaterial,
-    linearDamping: 0.68,
-    angularDamping: 0.9
+    mass: 0,
+    type: CANNON.Body.KINEMATIC,
+    material: catMaterial
   });
   catBody.addShape(new CANNON.Sphere(0.72));
-  catBody.position.set(0, 0.9, 19);
+  playerPosition.set(0, 0.72, 19);
+  playerVelocity.set(0, 0, 0);
+  catBody.position.set(playerPosition.x, playerPosition.y, playerPosition.z);
   physicsWorld.addBody(catBody);
 
   catGroup = group;
@@ -485,11 +489,14 @@ function createCat(avatar) {
 }
 
 function syncCatMesh() {
-  catGroup.position.set(catBody.position.x, catBody.position.y - 0.72 + catBobOffset, catBody.position.z);
+  catBody.position.set(playerPosition.x, playerPosition.y, playerPosition.z);
+  catGroup.position.set(playerPosition.x, playerPosition.y - 0.72 + catBobOffset, playerPosition.z);
 }
 
 function resetCat() {
-  catBody.position.set(0, 0.9, 19);
+  playerPosition.set(0, 0.72, 19);
+  playerVelocity.set(0, 0, 0);
+  catBody.position.set(playerPosition.x, playerPosition.y, playerPosition.z);
   catBody.velocity.set(0, 0, 0);
   catBody.angularVelocity.set(0, 0, 0);
   cameraYaw = 0;
@@ -584,20 +591,36 @@ function updateMovement(delta) {
   const input = readInputVector();
   const yawMatrix = new THREE.Matrix4().makeRotationY(cameraYaw);
   const direction = new THREE.Vector3(input.x, 0, input.y).applyMatrix4(yawMatrix);
-  const speed = 8.2;
+  const speed = 8.8;
   const hasInput = input.lengthSq() > 0.001;
 
   if (hasInput) {
-    catBody.velocity.x = direction.x * speed;
-    catBody.velocity.z = direction.z * speed;
+    playerVelocity.copy(direction).multiplyScalar(speed);
   } else {
-    catBody.velocity.x *= Math.pow(0.02, delta);
-    catBody.velocity.z *= Math.pow(0.02, delta);
+    playerVelocity.multiplyScalar(Math.pow(0.02, delta));
   }
 
-  const isMoving = Math.abs(catBody.velocity.x) + Math.abs(catBody.velocity.z) > 0.35;
+  playerPosition.addScaledVector(playerVelocity, delta);
+  playerPosition.x = THREE.MathUtils.clamp(playerPosition.x, -boundary, boundary);
+  playerPosition.z = THREE.MathUtils.clamp(playerPosition.z, -boundary, boundary);
+
+  obstacleCircles.forEach((obstacle) => {
+    const dx = playerPosition.x - obstacle.x;
+    const dz = playerPosition.z - obstacle.z;
+    const distance = Math.hypot(dx, dz);
+    const minimum = obstacle.radius + 0.78;
+    if (distance > 0.001 && distance < minimum) {
+      const push = (minimum - distance) / distance;
+      playerPosition.x += dx * push;
+      playerPosition.z += dz * push;
+      playerVelocity.multiplyScalar(0.45);
+    }
+  });
+
+  catBody.velocity.set(playerVelocity.x, 0, playerVelocity.z);
+  const isMoving = playerVelocity.lengthSq() > 0.12;
   if (isMoving) {
-    catGroup.rotation.y = THREE.MathUtils.lerp(catGroup.rotation.y, Math.atan2(catBody.velocity.x, catBody.velocity.z), 1 - Math.pow(0.001, delta));
+    catGroup.rotation.y = THREE.MathUtils.lerp(catGroup.rotation.y, Math.atan2(playerVelocity.x, playerVelocity.z), 1 - Math.pow(0.001, delta));
   }
 
   walkTime += delta * (isMoving ? 9 : 1.6);
