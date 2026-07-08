@@ -12,6 +12,10 @@ const panelKicker = document.querySelector("#panelKicker");
 const panelTitle = document.querySelector("#panelTitle");
 const panelBody = document.querySelector("#panelBody");
 const panelGallery = document.querySelector("#panelGallery");
+const panelPager = document.querySelector("#panelPager");
+const panelPrev = document.querySelector("#panelPrev");
+const panelNext = document.querySelector("#panelNext");
+const panelPageLabel = document.querySelector("#panelPageLabel");
 const interactPrompt = document.querySelector("#interactPrompt");
 const interactLabel = document.querySelector("#interactLabel");
 const hud = document.querySelector("#hud");
@@ -72,6 +76,50 @@ const avatarSchemes = [
   }
 ];
 
+const pictureFolders = {
+  achievements: "Pictures/Achievements",
+  moments: "Pictures/Ali moments"
+};
+
+const achievementImages = [
+  "Messenger_creation_0AD05EE1-7409-4E52-AF8C-7A1E1AFDBFC3.jpeg",
+  "Messenger_creation_1779A4EF-E444-4B68-8E4D-3A7CB0E65217.jpeg",
+  "Messenger_creation_3645DA9D-3436-4CD7-B805-342FBDCF0039.jpeg",
+  "Messenger_creation_379A7120-2227-4A76-9BC9-4D4CDB463BFD.jpeg",
+  "Messenger_creation_4A970B08-24E1-446C-947E-FAFC48195AE6.jpeg",
+  "Messenger_creation_6681E438-781B-41C8-98E0-4A63F195F536.jpeg",
+  "Messenger_creation_78CCD50E-1BE0-4F6A-A056-97DFB2F0BC3B.jpeg",
+  "Messenger_creation_8FC7ECA6-BB14-4792-AA89-DBF4C130418B.jpeg",
+  "Messenger_creation_A4A4383D-3461-4C2F-B2F0-4F8CE3E45A77.jpeg",
+  "Messenger_creation_AD278E25-4C42-40B1-A7D0-6C26634843AE.jpeg",
+  "Messenger_creation_DDF7F746-6A11-4498-95FD-9D4877352451.jpeg"
+];
+
+const momentImages = [
+  "Messenger_creation_02277D0F-9766-45FA-81DA-46F3EC2DC851.jpeg",
+  "Messenger_creation_025094F5-13AA-4BE2-AE33-937037FF3AC8.jpeg",
+  "Messenger_creation_24389FA6-2306-41AD-B753-5A149D7ECA84.jpeg",
+  "Messenger_creation_2AA6A3F7-4B3D-4083-A875-2A8A341AFEEA.jpeg",
+  "Messenger_creation_38CA46D2-5A7A-47D2-BE90-9F1F146DE84B.jpeg",
+  "Messenger_creation_423E7D9B-8337-41E2-A372-3C77F0D393B2.jpeg",
+  "Messenger_creation_46FA9692-4087-40AF-8C19-2549287C8B4E.jpeg",
+  "Messenger_creation_4C65BFAE-E0C8-4CFC-AA7C-4C9E1E093527.jpeg",
+  "Messenger_creation_7224E232-76DE-4CC5-A2C6-685412BE7DDA.jpeg",
+  "Messenger_creation_92FD14CA-25E6-477B-974C-4E8D85B490BD.jpeg",
+  "Messenger_creation_98F0B770-69E1-46E9-8AE5-11264AE4DC6B.jpeg",
+  "Messenger_creation_9DA16E8C-3081-42FE-9F9E-747AF6271E60.jpeg",
+  "Messenger_creation_B2E54B17-DBD8-418E-AB72-82BC13E273EC.jpeg",
+  "Messenger_creation_C189C434-FD5B-487E-9A1C-4065EAC27580.jpeg",
+  "Messenger_creation_C7F8382C-DE26-455D-8C27-F7CDF4D14C34.jpeg",
+  "Messenger_creation_E0A3D27D-D8EB-4EC5-88A3-E2A4D2350C46.jpeg",
+  "Messenger_creation_E0ED4047-7654-4B1B-AFAC-4F2147482873.jpeg",
+  "Messenger_creation_F8035717-A06E-40B6-96EC-710440D0E583.jpeg"
+];
+
+function pictureUrl(folder, fileName) {
+  return encodeURI(`${folder}/${fileName}`);
+}
+
 const zoneData = [
   {
     id: "achievements",
@@ -81,6 +129,7 @@ const zoneData = [
     color: 0xf4c869,
     position: new THREE.Vector3(18, 0, -12),
     body: "Placeholder for Ali's wins, milestones, tiny victories, and every reason she deserves to feel proud today. Replace this with specific achievements, inside jokes, or little medals.",
+    images: achievementImages.map((fileName) => pictureUrl(pictureFolders.achievements, fileName)),
     slots: ["Achievement photo", "Medal note", "Memory card"]
   },
   {
@@ -101,6 +150,7 @@ const zoneData = [
     color: 0x8ec7ff,
     position: new THREE.Vector3(-16, 0, 15),
     body: "Placeholder gallery for favorite photos, screenshots, dates, silly moments, and soft memories. Swap these slots with real images later.",
+    images: momentImages.map((fileName) => pictureUrl(pictureFolders.moments, fileName)),
     slots: ["Photo 01", "Photo 02", "Photo 03", "Photo 04", "Photo 05", "Photo 06"]
   }
 ];
@@ -112,6 +162,9 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
+
+const textureLoader = new THREE.TextureLoader();
+const boardTextureCache = new Map();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07110b);
@@ -146,6 +199,8 @@ let catParts = {};
 let activeZone = null;
 let activeZoneMesh = null;
 let openedPanel = false;
+let openPanelZone = null;
+let panelPageIndex = 0;
 let sceneStarted = false;
 let cameraYaw = 0;
 let draggingCamera = false;
@@ -185,6 +240,33 @@ function colorMaterial(color, options = {}) {
     roughness: options.roughness ?? 0.82,
     metalness: options.metalness ?? 0,
     emissive: options.emissive ?? 0x000000,
+    flatShading: true
+  });
+}
+
+function getZonePages(zone, perPage = 4) {
+  const items = zone.images?.length ? zone.images : zone.slots;
+  const pages = [];
+  for (let i = 0; i < items.length; i += perPage) {
+    pages.push(items.slice(i, i + perPage));
+  }
+  return pages.length ? pages : [[]];
+}
+
+function makePhotoMaterial(url) {
+  if (!url) return colorMaterial(0xe8dcc8);
+  if (!boardTextureCache.has(url)) {
+    const texture = textureLoader.load(url);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.center.set(0.5, 0.5);
+    texture.repeat.set(1, 1);
+    boardTextureCache.set(url, texture);
+  }
+  return new THREE.MeshStandardMaterial({
+    map: boardTextureCache.get(url),
+    color: 0xffffff,
+    roughness: 0.78,
+    metalness: 0,
     flatShading: true
   });
 }
@@ -411,17 +493,34 @@ function makePostingBoard(zone, localPosition) {
     pinRight
   );
 
-  const slotCount = zone.slots.length > 3 ? 4 : 3;
-  for (let i = 0; i < slotCount; i += 1) {
+  const boardPages = getZonePages(zone);
+  const firstPage = boardPages[0];
+  for (let i = 0; i < 4; i += 1) {
     const col = i % 2;
     const row = Math.floor(i / 2);
+    const item = firstPage[i];
+    const isPhoto = typeof item === "string" && item.match(/\.(jpe?g|png|webp|gif)$/i);
     const slot = mesh(
       new THREE.BoxGeometry(0.68, 0.5, 0.09),
-      i % 2 ? materials.white : colorMaterial(0xe8dcc8),
+      isPhoto ? makePhotoMaterial(item) : (i % 2 ? materials.white : colorMaterial(0xe8dcc8)),
       [1.18 + col * 0.68, 1.72 - row * 0.58, 0.18]
     );
     const photoGlow = mesh(new THREE.BoxGeometry(0.38, 0.06, 0.08), accentMat, [1.18 + col * 0.68, 1.49 - row * 0.58, 0.25]);
     board.add(slot, photoGlow);
+  }
+
+  if (boardPages.length > 1) {
+    for (let i = 0; i < Math.min(boardPages.length, 5); i += 1) {
+      const pageTab = mesh(
+        new THREE.BoxGeometry(0.28, 0.08, 0.08),
+        i === 0 ? accentMat : materials.gold,
+        [-0.56 + i * 0.32, 0.82, 0.2]
+      );
+      board.add(pageTab);
+    }
+    const nextMarker = mesh(new THREE.ConeGeometry(0.13, 0.32, 3), accentMat, [1.86, 0.84, 0.2]);
+    nextMarker.rotation.z = -Math.PI / 2;
+    board.add(nextMarker);
   }
 
   const toCenter = localPosition.clone().multiplyScalar(-1);
@@ -594,16 +693,12 @@ function openPanel(zone) {
   const panelRect = contentPanel.getBoundingClientRect();
   contentPanel.style.setProperty("--origin-x", `${sourcePoint.x - panelRect.left}px`);
   contentPanel.style.setProperty("--origin-y", `${sourcePoint.y - panelRect.top}px`);
+  openPanelZone = zone;
+  panelPageIndex = 0;
   panelKicker.textContent = zone.kicker;
   panelTitle.textContent = zone.title;
   panelBody.textContent = zone.body;
-  panelGallery.innerHTML = "";
-  zone.slots.forEach((slot) => {
-    const item = document.createElement("div");
-    item.className = "panel-slot";
-    item.textContent = slot;
-    panelGallery.appendChild(item);
-  });
+  renderPanelPage();
   contentPanel.classList.add("is-visible");
   contentPanel.classList.remove("is-transferring");
   void contentPanel.offsetWidth;
@@ -611,10 +706,37 @@ function openPanel(zone) {
   openedPanel = true;
 }
 
+function renderPanelPage() {
+  if (!openPanelZone) return;
+  const pages = getZonePages(openPanelZone, 6);
+  panelPageIndex = THREE.MathUtils.clamp(panelPageIndex, 0, pages.length - 1);
+  const pageItems = pages[panelPageIndex];
+  panelPager.hidden = pages.length <= 1;
+  panelPageLabel.textContent = `Board ${panelPageIndex + 1} / ${pages.length}`;
+  panelPrev.disabled = panelPageIndex === 0;
+  panelNext.disabled = panelPageIndex === pages.length - 1;
+  panelGallery.innerHTML = "";
+  pageItems.forEach((slot, index) => {
+    const item = document.createElement("div");
+    const isPhoto = typeof slot === "string" && slot.match(/\.(jpe?g|png|webp|gif)$/i);
+    item.className = isPhoto ? "panel-slot panel-slot--photo" : "panel-slot";
+    if (isPhoto) {
+      const img = document.createElement("img");
+      img.src = slot;
+      img.alt = `${openPanelZone.title} photo ${panelPageIndex * 6 + index + 1}`;
+      item.appendChild(img);
+    } else {
+      item.textContent = slot;
+    }
+    panelGallery.appendChild(item);
+  });
+}
+
 function closePanel() {
   contentPanel.classList.remove("is-visible");
   contentPanel.classList.remove("is-transferring");
   openedPanel = false;
+  openPanelZone = null;
   canvas.focus();
 }
 
@@ -831,6 +953,16 @@ welcomeClose.addEventListener("click", () => {
 });
 
 panelClose.addEventListener("click", closePanel);
+
+panelPrev.addEventListener("click", () => {
+  panelPageIndex -= 1;
+  renderPanelPage();
+});
+
+panelNext.addEventListener("click", () => {
+  panelPageIndex += 1;
+  renderPanelPage();
+});
 
 interactPrompt.addEventListener("click", () => {
   if (activeZone) openPanel(activeZone);
