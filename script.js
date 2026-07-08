@@ -144,6 +144,7 @@ let catGroup;
 let catBody;
 let catParts = {};
 let activeZone = null;
+let activeZoneMesh = null;
 let openedPanel = false;
 let sceneStarted = false;
 let cameraYaw = 0;
@@ -376,6 +377,38 @@ function makeLantern(position, color, icon) {
   return group;
 }
 
+function makePostingBoard(zone, localPosition) {
+  const board = new THREE.Group();
+  const accentMat = colorMaterial(zone.color, { emissive: zone.color });
+  const boardBack = mesh(new THREE.BoxGeometry(2.85, 1.75, 0.16), materials.parchment, [0, 1.58, 0]);
+  const boardCap = mesh(new THREE.BoxGeometry(3.1, 0.22, 0.22), materials.fence, [0, 2.56, 0]);
+  const postLeft = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.65, 8), materials.fence, [-1.18, 0.72, -0.03]);
+  const postRight = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.65, 8), materials.fence, [1.18, 0.72, -0.03]);
+  const titleStrip = mesh(new THREE.BoxGeometry(1.55, 0.18, 0.08), accentMat, [0, 2.18, 0.12]);
+  const pinLeft = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [-1.16, 2.24, 0.13]);
+  const pinRight = mesh(new THREE.SphereGeometry(0.08, 10, 8), materials.gold, [1.16, 2.24, 0.13]);
+  board.add(boardBack, boardCap, postLeft, postRight, titleStrip, pinLeft, pinRight);
+
+  const slotCount = zone.slots.length > 3 ? 6 : 3;
+  for (let i = 0; i < slotCount; i += 1) {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const slot = mesh(
+      new THREE.BoxGeometry(0.62, 0.46, 0.08),
+      i % 2 ? materials.white : colorMaterial(0xe8dcc8),
+      [-0.78 + col * 0.78, 1.62 - row * 0.58, 0.14]
+    );
+    const photoGlow = mesh(new THREE.BoxGeometry(0.38, 0.06, 0.09), accentMat, [-0.78 + col * 0.78, 1.39 - row * 0.58, 0.19]);
+    board.add(slot, photoGlow);
+  }
+
+  const toCenter = localPosition.clone().multiplyScalar(-1);
+  board.position.copy(localPosition);
+  board.rotation.y = Math.atan2(toCenter.x, toCenter.z);
+  board.userData.anchorLocal = localPosition.clone().add(new THREE.Vector3(0, 2.25, 0));
+  return board;
+}
+
 function makeZone(zone) {
   const zoneGroup = new THREE.Group();
   const padMaterial = colorMaterial(zone.color, { emissive: zone.color });
@@ -388,8 +421,14 @@ function makeZone(zone) {
   zoneGroup.add(ring);
   const lantern = makeLantern(new THREE.Vector3(0, 0, 0), zone.color, zone.icon);
   zoneGroup.add(lantern);
+  const zoneDirection = zone.position.lengthSq() > 0.01 ? zone.position.clone().normalize() : new THREE.Vector3(0, 0, 1);
+  const side = new THREE.Vector3(-zoneDirection.z, 0, zoneDirection.x).multiplyScalar(2.75);
+  const backFromPath = zoneDirection.clone().multiplyScalar(-1.05);
+  const board = makePostingBoard(zone, side.add(backFromPath));
+  zoneGroup.add(board);
   zoneGroup.position.copy(zone.position);
   zoneGroup.userData.zone = zone;
+  zoneGroup.userData.board = board;
   scene.add(zoneGroup);
   zoneMeshes.push(zoneGroup);
 }
@@ -524,6 +563,10 @@ function startForest(avatar) {
 }
 
 function openPanel(zone) {
+  const sourcePoint = activeZoneMesh ? getBoardScreenPoint(activeZoneMesh) : { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 };
+  const panelRect = contentPanel.getBoundingClientRect();
+  contentPanel.style.setProperty("--origin-x", `${sourcePoint.x - panelRect.left}px`);
+  contentPanel.style.setProperty("--origin-y", `${sourcePoint.y - panelRect.top}px`);
   panelKicker.textContent = zone.kicker;
   panelTitle.textContent = zone.title;
   panelBody.textContent = zone.body;
@@ -535,11 +578,15 @@ function openPanel(zone) {
     panelGallery.appendChild(item);
   });
   contentPanel.classList.add("is-visible");
+  contentPanel.classList.remove("is-transferring");
+  void contentPanel.offsetWidth;
+  contentPanel.classList.add("is-transferring");
   openedPanel = true;
 }
 
 function closePanel() {
   contentPanel.classList.remove("is-visible");
+  contentPanel.classList.remove("is-transferring");
   openedPanel = false;
   canvas.focus();
 }
@@ -550,23 +597,35 @@ function closeDrawers() {
   helpDrawer.classList.remove("is-visible");
 }
 
+function getBoardScreenPoint(zoneMesh) {
+  const board = zoneMesh.userData.board;
+  const localAnchor = board?.userData.anchorLocal || new THREE.Vector3(0, 3.2, 0);
+  const worldAnchor = localAnchor.clone().add(zoneMesh.position);
+  const screen = worldAnchor.project(camera);
+  return {
+    x: (screen.x * 0.5 + 0.5) * window.innerWidth,
+    y: (-screen.y * 0.5 + 0.5) * window.innerHeight
+  };
+}
+
 function updateNearbyZone() {
   activeZone = null;
+  activeZoneMesh = null;
   let nearestDistance = Infinity;
   zoneMeshes.forEach((zoneMesh) => {
     const distance = zoneMesh.position.distanceTo(catGroup.position);
     if (distance < 5.2 && distance < nearestDistance) {
       nearestDistance = distance;
       activeZone = zoneMesh.userData.zone;
-      reusableVec3.copy(zoneMesh.position).add(new THREE.Vector3(0, 3.7, 0));
+      activeZoneMesh = zoneMesh;
     }
   });
 
   if (activeZone && !openedPanel) {
-    const screen = reusableVec3.clone().project(camera);
-    interactPrompt.style.left = `${(screen.x * 0.5 + 0.5) * 100}%`;
-    interactPrompt.style.top = `${(-screen.y * 0.5 + 0.5) * 100}%`;
-    interactLabel.textContent = window.matchMedia("(pointer: coarse)").matches ? "Tap to open" : "Press E to open";
+    const screen = getBoardScreenPoint(activeZoneMesh);
+    interactPrompt.style.left = `${screen.x}px`;
+    interactPrompt.style.top = `${screen.y}px`;
+    interactLabel.textContent = window.matchMedia("(pointer: coarse)").matches ? "Tap board to open" : "Press E to open board";
     interactPrompt.classList.add("is-visible");
     interactPrompt.setAttribute("aria-hidden", "false");
   } else {
@@ -672,8 +731,8 @@ function animate() {
   if (sceneStarted) {
     updateMovement(delta);
     physicsWorld.step(1 / 60, delta, 3);
-    catBody.position.x = THREE.MathUtils.clamp(catBody.position.x, -boundary, boundary);
-    catBody.position.z = THREE.MathUtils.clamp(catBody.position.z, -boundary, boundary);
+    playerPosition.x = THREE.MathUtils.clamp(playerPosition.x, -boundary, boundary);
+    playerPosition.z = THREE.MathUtils.clamp(playerPosition.z, -boundary, boundary);
     syncCatMesh();
     updateNearbyZone();
     updateCamera(delta);
