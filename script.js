@@ -271,6 +271,39 @@ function makePhotoMaterial(url) {
   });
 }
 
+function makeTextMaterial(text, colorHex, width = 768, height = 192) {
+  const canvasEl = document.createElement("canvas");
+  canvasEl.width = width;
+  canvasEl.height = height;
+  const ctx = canvasEl.getContext("2d");
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#f5f0e6";
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = "#8a6743";
+  ctx.lineWidth = 18;
+  ctx.strokeRect(9, 9, width - 18, height - 18);
+  ctx.fillStyle = `#${colorHex.toString(16).padStart(6, "0")}`;
+  ctx.fillRect(36, height - 42, width - 72, 12);
+  ctx.fillStyle = "#2b2118";
+  let fontSize = 62;
+  ctx.font = `700 ${fontSize}px Fredoka, Inter, sans-serif`;
+  while (ctx.measureText(text).width > width - 92 && fontSize > 30) {
+    fontSize -= 4;
+    ctx.font = `700 ${fontSize}px Fredoka, Inter, sans-serif`;
+  }
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, width / 2, height / 2 - 8);
+  const texture = new THREE.CanvasTexture(canvasEl);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.78,
+    metalness: 0,
+    flatShading: true
+  });
+}
+
 const materials = {
   ground: colorMaterial(0x1e3a2b),
   groundDark: colorMaterial(0x0d1f14),
@@ -469,7 +502,7 @@ function makePostingBoard(zone, localPosition, pageIndex = 0, boardIndex = 0, vi
   const boardFrameRight = mesh(new THREE.BoxGeometry(0.28, 3.5, 0.28), materials.fence, [2.92, 2.25, 0]);
   const postLeft = mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.45, 8), materials.fence, [-2.35, 0.9, -0.05]);
   const postRight = mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.45, 8), materials.fence, [2.35, 0.9, -0.05]);
-  const titleStrip = mesh(new THREE.BoxGeometry(3.3, 0.26, 0.1), accentMat, [0, 3.55, 0.16]);
+  const titleStrip = mesh(new THREE.BoxGeometry(3.9, 0.62, 0.1), makeTextMaterial(zone.title, zone.color, 640, 160), [-0.18, 3.54, 0.16]);
   const pageBadge = mesh(new THREE.BoxGeometry(0.66, 0.28, 0.1), boardIndex === 0 ? accentMat : materials.gold, [2.1, 3.55, 0.17]);
   const pinLeft = mesh(new THREE.SphereGeometry(0.09, 10, 8), materials.gold, [-2.42, 3.72, 0.18]);
   const pinRight = mesh(new THREE.SphereGeometry(0.09, 10, 8), materials.gold, [2.42, 3.72, 0.18]);
@@ -539,6 +572,20 @@ function makePostingBoard(zone, localPosition, pageIndex = 0, boardIndex = 0, vi
   return board;
 }
 
+function makeSectionHeader(zone, localPosition) {
+  const header = new THREE.Group();
+  const textMat = makeTextMaterial(zone.title, zone.color);
+  const face = mesh(new THREE.BoxGeometry(6.8, 1.15, 0.14), textMat, [0, 4.45, 0]);
+  const topRail = mesh(new THREE.BoxGeometry(7.15, 0.18, 0.2), materials.fence, [0, 5.12, -0.02]);
+  const leftPost = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.4, 8), materials.fence, [-3.15, 3.82, -0.04]);
+  const rightPost = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.4, 8), materials.fence, [3.15, 3.82, -0.04]);
+  header.add(face, topRail, leftPost, rightPost);
+  const toCenter = localPosition.clone().multiplyScalar(-1);
+  header.position.copy(localPosition);
+  header.rotation.y = Math.atan2(toCenter.x, toCenter.z);
+  return header;
+}
+
 function makeZone(zone) {
   const zoneGroup = new THREE.Group();
   const padMaterial = colorMaterial(zone.color, { emissive: zone.color });
@@ -556,6 +603,7 @@ function makeZone(zone) {
   const boardPages = getZonePages(zone, 3);
   const visibleBoardCount = zone.images?.length ? Math.min(3, boardPages.length) : 1;
   const boards = [];
+  const groupCenter = sideDirection.clone().multiplyScalar(9.4).add(zoneDirection.clone().multiplyScalar(-3.3));
   for (let i = 0; i < visibleBoardCount; i += 1) {
     const side = sideDirection.clone().multiplyScalar(9.4);
     const alongPath = zoneDirection.clone().multiplyScalar((i - (visibleBoardCount - 1) / 2) * 5.8 - 2.6);
@@ -564,6 +612,8 @@ function makeZone(zone) {
     zoneGroup.add(board);
     boards.push(board);
   }
+  const sectionHeader = makeSectionHeader(zone, groupCenter.clone().add(zoneDirection.clone().multiplyScalar(-2.4)));
+  zoneGroup.add(sectionHeader);
   zoneGroup.position.copy(zone.position);
   zoneGroup.userData.zone = zone;
   zoneGroup.userData.board = boards[0];

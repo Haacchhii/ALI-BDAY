@@ -308,23 +308,24 @@ h3 {
 }
 
 .content-panel {
-  right: 24px;
-  bottom: 24px;
-  width: min(560px, calc(100vw - 48px));
-  max-height: min(640px, calc(100vh - 48px));
-  padding: 30px;
+  left: 50%;
+  top: 50%;
+  width: min(1040px, calc(100vw - 56px));
+  max-height: min(780px, calc(100vh - 56px));
+  padding: clamp(26px, 4vw, 44px);
   overflow: auto;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(22px) scale(0.82);
+  transform: translate(-50%, -48%) scale(0.72);
   transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
-  transition: opacity 220ms ease, transform 220ms ease;
+  transition: opacity 240ms ease, transform 260ms ease, backdrop-filter 260ms ease;
+  backdrop-filter: blur(10px);
 }
 
 .content-panel.is-visible {
   pointer-events: auto;
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .content-panel.is-transferring {
@@ -349,15 +350,16 @@ h3 {
 
 #panelBody {
   color: rgba(43, 33, 24, 0.78);
-  font-size: 16px;
+  max-width: 780px;
+  font-size: 18px;
   line-height: 1.65;
 }
 
 .panel-gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 18px;
+  gap: 14px;
+  margin-top: 20px;
 }
 
 .panel-pager {
@@ -398,7 +400,7 @@ h3 {
 .panel-slot {
   display: grid;
   place-items: center;
-  min-height: 92px;
+  min-height: 150px;
   border: 1px dashed rgba(43, 33, 24, 0.28);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.26);
@@ -409,7 +411,7 @@ h3 {
 }
 
 .panel-slot--photo {
-  min-height: 132px;
+  min-height: 220px;
   border-style: solid;
   padding: 0;
   background: rgba(43, 33, 24, 0.12);
@@ -418,7 +420,7 @@ h3 {
 .panel-slot img {
   width: 100%;
   height: 100%;
-  min-height: 132px;
+  min-height: 220px;
   object-fit: cover;
   display: block;
 }
@@ -563,19 +565,19 @@ h3 {
 @keyframes boardToScreen {
   0% {
     opacity: 0;
-    transform: scale(0.18) rotate(-2deg);
+    transform: translate(-50%, -50%) scale(0.18) rotate(-2deg);
     filter: blur(3px);
   }
 
   62% {
     opacity: 1;
-    transform: scale(1.035) rotate(0.4deg);
+    transform: translate(-50%, -50%) scale(1.035) rotate(0.4deg);
     filter: blur(0);
   }
 
   100% {
     opacity: 1;
-    transform: scale(1) rotate(0);
+    transform: translate(-50%, -50%) scale(1) rotate(0);
   }
 }
 
@@ -645,9 +647,9 @@ h3 {
   }
 
   .content-panel {
-    right: 12px;
-    bottom: 82px;
+    top: 52%;
     width: calc(100vw - 24px);
+    max-height: calc(100vh - 118px);
     padding: 24px;
   }
 }
@@ -675,5 +677,10 @@ h3 {
 
   .panel-gallery {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .panel-slot--photo,
+  .panel-slot img {
+    min-height: 150px;
   }
 }
